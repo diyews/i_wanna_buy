@@ -2,7 +2,7 @@
     package="ws.diye.i_wanna_buy">
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="i_wanna_buy"
+        android:label="I Wanna Buy"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

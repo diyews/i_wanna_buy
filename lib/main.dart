@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:numberpicker/numberpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -80,6 +83,20 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             icon: const Icon(Icons.add),
           ),
+          IconButton(
+            onPressed: () async {
+              final res = await showDialog(
+                  context: context,
+                  builder: (context) {
+                    return const _ZhiCountDialog();
+                  });
+
+              if (res == true) {
+                reFetchSmzdmChangeNotifier.notify();
+              }
+            },
+            icon: const Icon(Icons.settings),
+          ),
         ],
       ),
       body: keywordList.isEmpty
@@ -118,5 +135,63 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
     );
+  }
+}
+
+class _ZhiCountDialog extends StatefulWidget {
+  const _ZhiCountDialog({Key? key}) : super(key: key);
+
+  @override
+  _ZhiCountDialogState createState() => _ZhiCountDialogState();
+}
+
+class _ZhiCountDialogState extends State<_ZhiCountDialog> {
+  late int zhiCount;
+  late SharedPreferences prefs;
+  final Completer completer = Completer();
+
+  _ZhiCountDialogState() {
+    SharedPreferences.getInstance().then((_prefs) {
+      prefs = _prefs;
+      zhiCount = _prefs.getInt('zhiCount') ?? 10;
+      completer.complete(true);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: completer.future,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return AlertDialog(
+              content: NumberPicker(
+                value: zhiCount,
+                minValue: 1,
+                maxValue: 20,
+                onChanged: (value) => setState(() {
+                  zhiCount = value;
+                }),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    prefs.setInt('zhiCount', zhiCount);
+                    Navigator.pop(context, true);
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          } else {
+            return Container();
+          }
+        });
   }
 }

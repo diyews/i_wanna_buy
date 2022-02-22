@@ -50,8 +50,10 @@ class _KeywordItemState extends State<KeywordItem> {
 
     fetchISOString = DateTime.now().toIso8601String();
 
-    final List<SmzdmItem> itemList = [];
+    final prefs = await SharedPreferences.getInstance();
+    final zhiCount = prefs.getInt('zhiCount') ?? 10;
 
+    final List<SmzdmItem> itemList = [];
     final List<Future> futureList = [];
 
     for (var i = 1; i <= 10; ++i) {
@@ -62,7 +64,7 @@ class _KeywordItemState extends State<KeywordItem> {
 
         final filteredList = list.where((element) {
           int zhi = int.parse(element.zhi);
-          return zhi >= 10;
+          return zhi >= zhiCount;
         });
         return filteredList;
       }));
