@@ -21,10 +21,16 @@ Future<List<SmzdmItem>> searchKeyword(
 
 class SmzdmWidget extends StatelessWidget {
   final SmzdmItem item;
-  final bool isEven;
+  final Color color;
+  final GestureTapCallback? onTap;
 
-  const SmzdmWidget(this.item, {Key? key, this.isEven = false})
-      : super(key: key);
+  const SmzdmWidget(
+    this.item, {
+    Key? key,
+    Color? color,
+    this.onTap,
+  })  : color = color ?? Colors.white,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,47 +39,54 @@ class SmzdmWidget extends StatelessWidget {
     );
 
     return Container(
-      color: isEven ? const Color(0xffe4e4e4) : Colors.white,
+      color: color,
       padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          Text(item.title),
-          Text(
-            item.price,
-            style: const TextStyle(color: Colors.red),
-          ),
-          Text(
-            item.tag,
-            style: const TextStyle(color: Colors.black38),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
             children: [
-              Row(
-                children: [
-                  Text(item.zhi),
-                  numberSpacer,
-                  Text(item.buzhi),
-                  numberSpacer,
-                  Text(item.comment),
-                ],
+              Text(item.title),
+              Text(
+                item.price,
+                style: const TextStyle(color: Colors.red),
+              ),
+              Text(
+                item.tag,
+                style: const TextStyle(color: Colors.black38),
               ),
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(item.time),
-                  numberSpacer,
-                  Text(item.platform),
+                  Row(
+                    children: [
+                      Text(item.zhi),
+                      numberSpacer,
+                      Text(item.buzhi),
+                      numberSpacer,
+                      Text(item.comment),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Text(item.time),
+                      numberSpacer,
+                      Text(item.platform),
+                    ],
+                  ),
                 ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
 class SmzdmItem {
+  final String id;
   final String title;
   final String price;
   final String tag;
@@ -83,8 +96,10 @@ class SmzdmItem {
   final String comment;
   final String time;
   final String platform;
+  final String href;
 
   SmzdmItem({
+    required String? id,
     required String? title,
     required String? price,
     required String? tag,
@@ -94,7 +109,9 @@ class SmzdmItem {
     required String? comment,
     required String? time,
     required String? platform,
-  })  : title = (title ?? '').trim(),
+    required String? href,
+  })  : id = (id ?? '').trim(),
+        title = (title ?? '').trim(),
         price = (price ?? '').trim(),
         tag = (tag ?? '').trim(),
         desc = (desc ?? '').trim(),
@@ -102,7 +119,8 @@ class SmzdmItem {
         buzhi = (buzhi ?? '').trim(),
         comment = (comment ?? '').trim(),
         time = (time ?? '').trim(),
-        platform = (platform ?? '').trim();
+        platform = (platform ?? '').trim(),
+        href = (href ?? '').trim();
 }
 
 List<SmzdmItem> _extraSmzdmItem(String body) {
@@ -120,15 +138,28 @@ List<SmzdmItem> _extraSmzdmItem(String body) {
     final comment = item.querySelector('.feed-btn-comment');
     final extras = item.querySelector('.feed-block-extras');
 
+    final idRegExp = RegExp(r'/(\d+?)/');
+    final String href = title?.attributes['href'] ?? '';
+    String id = '';
+    if (href.isNotEmpty) {
+      final match = idRegExp.firstMatch(href);
+      if (match?.groupCount == 1) {
+        id = match!.group(1)!;
+      }
+    }
+
     resList.add(SmzdmItem(
-        title: title?.text,
-        price: price?.text,
-        tag: tag?.text,
-        zhi: zhi?.text,
-        buzhi: buzhi?.text,
-        comment: comment?.text,
-        time: extras?.nodes[0].text,
-        platform: extras?.nodes[1].text));
+      id: id,
+      title: title?.text,
+      price: price?.text,
+      tag: tag?.text,
+      zhi: zhi?.text,
+      buzhi: buzhi?.text,
+      comment: comment?.text,
+      time: extras?.nodes[0].text,
+      platform: extras?.nodes[1].text,
+      href: href,
+    ));
   }
 
   return resList;

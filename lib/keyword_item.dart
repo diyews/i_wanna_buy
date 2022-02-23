@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:i_wanna_buy/unread_list.dart';
 import 'package:provider/provider.dart' show ReadContext;
@@ -23,6 +24,7 @@ class _KeywordItemState extends State<KeywordItem> {
   SmzdmItem? smzdmFirst;
   bool loading = false;
   ReFetchSmzdmChangeNotifier? reFetchSmzdmChangeNotifier;
+  int toReadCount = 0;
 
   @override
   void initState() {
@@ -44,6 +46,7 @@ class _KeywordItemState extends State<KeywordItem> {
   }
 
   startFetch() async {
+    toReadCount = 0;
     setState(() {
       loading = true;
     });
@@ -52,6 +55,11 @@ class _KeywordItemState extends State<KeywordItem> {
 
     final prefs = await SharedPreferences.getInstance();
     final zhiCount = prefs.getInt('zhiCount') ?? 10;
+    final String? keywordItemString = prefs.getString(widget.keyword);
+    KeywordItemModel keywordItemModel = KeywordItemModel();
+    if (keywordItemString != null) {
+      keywordItemModel = keywordItemModelFromJson(keywordItemString);
+    }
 
     final List<SmzdmItem> itemList = [];
     final List<Future> futureList = [];
@@ -66,6 +74,13 @@ class _KeywordItemState extends State<KeywordItem> {
           int zhi = int.parse(element.zhi);
           return zhi >= zhiCount;
         });
+        final toReadList = filteredList.where((element) {
+          if (element.id.isNotEmpty) {
+            return !keywordItemModel.readList.contains(element.id);
+          }
+          return true;
+        });
+        toReadCount += toReadList.length;
         return filteredList;
       }));
     }
@@ -110,8 +125,11 @@ class _KeywordItemState extends State<KeywordItem> {
 
         Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => UnreadList(smzdmItemList),
+            CupertinoPageRoute(
+              builder: (_) => UnreadList(
+                smzdmItemList,
+                keyword: widget.keyword,
+              ),
             ));
       },
       child: SizedBox(
@@ -134,23 +152,36 @@ class _KeywordItemState extends State<KeywordItem> {
                     )
                   : smzdmItemList.isEmpty
                       ? const SizedBox.shrink()
-                      : RawMaterialButton(
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          constraints: const BoxConstraints.tightFor(
-                            width: 24,
-                            height: 24,
-                          ),
-                          onPressed: () {
-                            print(smzdmFirst);
-                          },
-                          elevation: 2.0,
-                          fillColor: Colors.blue,
-                          child: Text(
-                            '${smzdmItemList.length}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          shape: const CircleBorder(),
+                      : Row(
+                          children: [
+                            if (toReadCount != 0)
+                              _MyRawMaterialButton(
+                                onPressed: () {},
+                                child: Text(
+                                  '$toReadCount',
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                fillColor: Colors.green.shade600,
+                              ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            _MyRawMaterialButton(
+                              onPressed: () {},
+                              child: smzdmItemList.isEmpty
+                                  ? const Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 18,
+                                    )
+                                  : Text(
+                                      '${smzdmItemList.length}',
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                              fillColor: Colors.blue,
+                            ),
+                          ],
                         ),
             ),
           ],
@@ -158,4 +189,25 @@ class _KeywordItemState extends State<KeywordItem> {
       ),
     );
   }
+}
+
+class _MyRawMaterialButton extends RawMaterialButton {
+  const _MyRawMaterialButton({
+    Key? key,
+    required onPressed,
+    fillColor,
+    child,
+  }) : super(
+          key: key,
+          onPressed: onPressed,
+          fillColor: fillColor,
+          child: child,
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          constraints: const BoxConstraints.tightFor(
+            width: 24,
+            height: 24,
+          ),
+          elevation: 2.0,
+          shape: const CircleBorder(),
+        );
 }

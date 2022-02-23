@@ -116,12 +116,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       confirmDismiss: (dir) async {
                         switch (dir) {
                           case DismissDirection.endToStart:
-                            print(1);
                             break;
                           case DismissDirection.startToEnd:
+                            final keyword = keywordList[index];
                             keywordList.removeAt(index);
                             final prefs = await SharedPreferences.getInstance();
                             prefs.setStringList('keywords', keywordList);
+                            prefs.remove(keyword);
                             return true;
                           default:
                         }

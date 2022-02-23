@@ -62,7 +62,7 @@ class _AddKeywordState extends State<AddKeyword> {
             },
             child: SmzdmWidget(
               item,
-              isEven: index.isEven,
+              color: index.isEven ? const Color(0xffe4e4e4) : null,
             ),
           );
         },

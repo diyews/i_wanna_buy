@@ -11,21 +11,21 @@ String keywordItemModelToJson(KeywordItemModel data) =>
 class KeywordItemModel {
   KeywordItemModel({
     this.date = '',
-    this.unread = false,
-  });
+    readList,
+  }) : readList = readList ?? [];
 
   String date;
-  bool unread;
+  List<String> readList;
 
   factory KeywordItemModel.fromJson(Map<String, dynamic> json) =>
       KeywordItemModel(
         date: json["date"],
-        unread: json["unread"],
+        readList: List<String>.from(json["readList"].map((x) => x)),
       );
 
   Map<String, dynamic> toJson() => {
         "date": date,
-        "unread": unread,
+        "readList": List<dynamic>.from(readList.map((x) => x)),
       };
 }
 
