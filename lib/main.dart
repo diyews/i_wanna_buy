@@ -23,6 +23,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+      ),
       home: const MyHomePage(title: ''),
     );
   }
@@ -123,6 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             final prefs = await SharedPreferences.getInstance();
                             prefs.setStringList('keywords', keywordList);
                             prefs.remove(keyword);
+                            setState(() {});
                             return true;
                           default:
                         }

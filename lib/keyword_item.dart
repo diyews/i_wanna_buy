@@ -133,7 +133,7 @@ class _KeywordItemState extends State<KeywordItem> {
             ));
       },
       child: SizedBox(
-        height: 40,
+        height: 50,
         child: Stack(
           alignment: Alignment.center,
           children: [

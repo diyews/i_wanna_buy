@@ -28,6 +28,7 @@ class _AddKeywordState extends State<AddKeyword> {
     return Scaffold(
       appBar: AppBar(
         title: TextField(
+          autofocus: true,
           controller: _controller,
           cursorColor: Colors.white,
           textInputAction: TextInputAction.search,
