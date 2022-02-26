@@ -14,7 +14,7 @@ class UnreadList extends StatefulWidget {
   const UnreadList(
     this.smzdmItemList, {
     Key? key,
-    required String this.keyword,
+    required this.keyword,
   }) : super(key: key);
 
   @override
@@ -72,6 +72,8 @@ class _UnreadListState extends State<UnreadList> {
       body: FutureBuilder(
           future: completer.future,
           builder: (context, snapshot) {
+            final theme = Theme.of(context);
+
             return !snapshot.hasData
                 ? const SizedBox.shrink()
                 : ListView(
@@ -102,7 +104,7 @@ class _UnreadListState extends State<UnreadList> {
                           child: SmzdmWidget(
                             item,
                             color: keywordItemModel.readList.contains(item.id)
-                                ? const Color(0xffcccccc)
+                                ? theme.disabledColor
                                 : null,
                             onTap: () {
                               if (item.href.isNotEmpty) {

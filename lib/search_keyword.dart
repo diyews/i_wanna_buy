@@ -21,16 +21,15 @@ Future<List<SmzdmItem>> searchKeyword(
 
 class SmzdmWidget extends StatelessWidget {
   final SmzdmItem item;
-  final Color color;
+  final Color? color;
   final GestureTapCallback? onTap;
 
   const SmzdmWidget(
     this.item, {
     Key? key,
-    Color? color,
+    this.color,
     this.onTap,
-  })  : color = color ?? Colors.white,
-        super(key: key);
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +37,11 @@ class SmzdmWidget extends StatelessWidget {
       width: 8,
     );
 
+    final theme = Theme.of(context);
+    final backgroundColor = color ?? theme.colorScheme.onSecondary;
+
     return Container(
-      color: color,
+      color: backgroundColor,
       padding: const EdgeInsets.all(8),
       child: Material(
         color: Colors.transparent,
@@ -54,7 +56,9 @@ class SmzdmWidget extends StatelessWidget {
               ),
               Text(
                 item.tag,
-                style: const TextStyle(color: Colors.black38),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withAlpha(75),
+                ),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -54,6 +54,7 @@ class _AddKeywordState extends State<AddKeyword> {
       body: ListView.builder(
         itemCount: itemList.length,
         itemBuilder: (context, index) {
+          final theme = Theme.of(context);
           final item = itemList[index];
 
           return Dismissible(
@@ -63,7 +64,7 @@ class _AddKeywordState extends State<AddKeyword> {
             },
             child: SmzdmWidget(
               item,
-              color: index.isEven ? const Color(0xffe4e4e4) : null,
+              color: index.isEven ? theme.dividerColor : null,
             ),
           );
         },
