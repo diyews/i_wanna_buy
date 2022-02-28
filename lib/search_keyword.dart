@@ -58,6 +58,8 @@ class SmzdmWidget extends StatelessWidget {
                 item.tag,
                 style: TextStyle(
                   color: theme.colorScheme.onSurface.withAlpha(75),
+                  decoration:
+                      item.isPastDue ? TextDecoration.lineThrough : null,
                 ),
               ),
               Row(
@@ -101,6 +103,7 @@ class SmzdmItem {
   final String time;
   final String platform;
   final String href;
+  final bool isPastDue;
 
   SmzdmItem({
     required String? id,
@@ -114,6 +117,7 @@ class SmzdmItem {
     required String? time,
     required String? platform,
     required String? href,
+    this.isPastDue = false,
   })  : id = (id ?? '').trim(),
         title = (title ?? '').trim(),
         price = (price ?? '').trim(),
@@ -141,6 +145,7 @@ List<SmzdmItem> _extraSmzdmItem(String body) {
     final buzhi = item.querySelector('.z-icon-buzhi-o-thin + span');
     final comment = item.querySelector('.feed-btn-comment');
     final extras = item.querySelector('.feed-block-extras');
+    final bool isPastDue = item.querySelector('.search-pastdue-mark') != null;
 
     final idRegExp = RegExp(r'/(\d+?)/');
     final String href = title?.attributes['href'] ?? '';
@@ -163,6 +168,7 @@ List<SmzdmItem> _extraSmzdmItem(String body) {
       time: extras?.nodes[0].text,
       platform: extras?.nodes[1].text,
       href: href,
+      isPastDue: isPastDue,
     ));
   }
 
