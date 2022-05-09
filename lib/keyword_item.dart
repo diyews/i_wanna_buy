@@ -21,10 +21,10 @@ class _KeywordItemState extends State<KeywordItem> {
   String fetchISOString = DateTime.now().toIso8601String();
   KeywordItemModel keywordItem = KeywordItemModel();
   List<SmzdmItem> smzdmItemList = [];
-  SmzdmItem? smzdmFirst;
   bool loading = false;
   ReFetchSmzdmChangeNotifier? reFetchSmzdmChangeNotifier;
   int toReadCount = 0;
+  int timeoutCount = 0;
 
   @override
   void initState() {
@@ -47,6 +47,7 @@ class _KeywordItemState extends State<KeywordItem> {
 
   startFetch() async {
     toReadCount = 0;
+    timeoutCount = 0;
     setState(() {
       loading = true;
     });
@@ -62,18 +63,21 @@ class _KeywordItemState extends State<KeywordItem> {
     }
 
     final List<SmzdmItem> itemList = [];
-    final List<Future> futureList = [];
+    final List<Future<List<SmzdmItem>>> futureList = [];
 
     for (var i = 1; i <= 10; ++i) {
-      futureList.add(searchKeyword(widget.keyword, page: i).then((list) {
-        if (i == 1 && list.length > 1) {
-          smzdmFirst = list.first;
+      futureList.add(searchKeyword(widget.keyword, page: i).then((result) {
+        final list = result.list;
+        // early return of timeout
+        if (result.status == 'timeout') {
+          timeoutCount++;
+          return list;
         }
 
         final filteredList = list.where((element) {
           int zhi = int.parse(element.zhi);
           return zhi >= zhiCount;
-        });
+        }).toList();
         final toReadList = filteredList.where((element) {
           if (element.id.isNotEmpty) {
             return !keywordItemModel.readList.contains(element.id);
@@ -85,7 +89,11 @@ class _KeywordItemState extends State<KeywordItem> {
       }));
     }
 
-    final itemListList = await Future.wait(futureList);
+    List<Iterable<SmzdmItem>> itemListList = [];
+    try {
+      itemListList = await Future.wait(futureList);
+    } catch (_) {}
+
     for (var _itemList in itemListList) {
       itemList.addAll(_itemList);
     }
@@ -150,39 +158,45 @@ class _KeywordItemState extends State<KeywordItem> {
                         strokeWidth: 2,
                       ),
                     )
-                  : smzdmItemList.isEmpty
-                      ? const SizedBox.shrink()
-                      : Row(
-                          children: [
-                            if (toReadCount != 0)
-                              _MyRawMaterialButton(
-                                onPressed: () {},
-                                child: Text(
-                                  '$toReadCount',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                fillColor: Colors.green.shade600,
-                              ),
-                            const SizedBox(
-                              width: 8,
+                  : Row(
+                      children: [
+                        if (timeoutCount != 0)
+                          _MyRawMaterialButton(
+                            onPressed: () {},
+                            child: Text(
+                              '$timeoutCount',
+                              style: const TextStyle(color: Colors.white),
                             ),
-                            _MyRawMaterialButton(
-                              onPressed: () {},
-                              child: smzdmItemList.isEmpty
-                                  ? const Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 18,
-                                    )
-                                  : Text(
-                                      '${smzdmItemList.length}',
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                    ),
-                              fillColor: Colors.blue,
+                            fillColor: Colors.grey.shade600,
+                          ),
+                        if (toReadCount != 0)
+                          const SizedBox(
+                            width: 8,
+                          ),
+                        if (toReadCount != 0)
+                          _MyRawMaterialButton(
+                            onPressed: () {},
+                            child: Text(
+                              '$toReadCount',
+                              style: const TextStyle(color: Colors.white),
                             ),
-                          ],
-                        ),
+                            fillColor: Colors.green.shade600,
+                          ),
+                        if (smzdmItemList.isNotEmpty)
+                          const SizedBox(
+                            width: 8,
+                          ),
+                        if (smzdmItemList.isNotEmpty)
+                          _MyRawMaterialButton(
+                            onPressed: () {},
+                            child: Text(
+                              '${smzdmItemList.length}',
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            fillColor: Colors.blue,
+                          ),
+                      ],
+                    ),
             ),
           ],
         ),

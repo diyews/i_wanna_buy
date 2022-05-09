@@ -18,7 +18,7 @@ class _AddKeywordState extends State<AddKeyword> {
     final searchText = _controller.text;
     if (searchText.isEmpty) return;
 
-    itemList.addAll(await searchKeyword(searchText));
+    itemList.addAll(await searchKeyword(searchText).then((res) => res.list));
 
     setState(() {});
   }

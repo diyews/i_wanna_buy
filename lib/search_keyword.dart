@@ -5,18 +5,23 @@ import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:http/http.dart' as http;
 
-Future<List<SmzdmItem>> searchKeyword(
+Future<SearchKeywordResult> searchKeyword(
   String keyword, {
   int page = 1,
 }) async {
   final url = Uri.parse(
       'https://search.smzdm.com/?c=faxian&s=$keyword&order=time&v=b&p=$page');
-  final response = await http.get(url);
+  final response = await http.get(url).timeout(
+        const Duration(seconds: 12),
+        onTimeout: () => http.Response('Timeout', 408),
+      );
   final String body = utf8.decode(response.bodyBytes);
 
-  final List<SmzdmItem> resList = await compute(_extraSmzdmItem, body);
-
-  return resList;
+  if (body != 'Timeout') {
+    return compute(_extraSmzdmItem, body);
+  } else {
+    return SearchKeywordResult([], status: 'timeout');
+  }
 }
 
 class SmzdmWidget extends StatelessWidget {
@@ -131,7 +136,17 @@ class SmzdmItem {
         href = (href ?? '').trim();
 }
 
-List<SmzdmItem> _extraSmzdmItem(String body) {
+class SearchKeywordResult {
+  final String status;
+  final List<SmzdmItem> list;
+
+  SearchKeywordResult(
+    this.list, {
+    this.status = 'success',
+  });
+}
+
+SearchKeywordResult _extraSmzdmItem(String body) {
   final document = parse(body);
   final List<SmzdmItem> resList = [];
   final items = document.getElementsByClassName('feed-row-wide');
@@ -172,5 +187,5 @@ List<SmzdmItem> _extraSmzdmItem(String body) {
     ));
   }
 
-  return resList;
+  return SearchKeywordResult(resList);
 }
