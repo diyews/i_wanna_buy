@@ -11,10 +11,15 @@ Future<SearchKeywordResult> searchKeyword(
 }) async {
   final url = Uri.parse(
       'https://search.smzdm.com/?c=faxian&s=$keyword&order=time&v=b&p=$page');
-  final response = await http.get(url).timeout(
-        const Duration(seconds: 12),
-        onTimeout: () => http.Response('Timeout', 408),
-      );
+  final response = await http.get(url, headers: {
+    "cookie": "ssmx_ab=mxss14;",
+    "user-agent":
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
+    "Host": "search.smzdm.com"
+  }).timeout(
+    const Duration(seconds: 12),
+    onTimeout: () => http.Response('Timeout', 408),
+  );
   final String body = utf8.decode(response.bodyBytes);
 
   if (body != 'Timeout') {
